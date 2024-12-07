@@ -1,37 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_cc1/models/post.model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_cc1/ui/blocs/posts_bloc/posts_bloc.dart';
 import 'package:flutter_cc1/ui/screens/posts_screen/post_list_item.dart';
 
-class PostsScreen extends StatelessWidget {
-  final List<PostModel> posts = [
-    const PostModel(
-      title: 'Flutter: A Guide for Beginners',
-      description:
-          'Learn the basics of Flutter, a powerful UI toolkit for building natively compiled applications for mobile, web, and desktop from a single codebase.',
-    ),
-    const PostModel(
-      title: 'The Future of Artificial Intelligence',
-      description:
-          'Explore how AI is transforming industries, from healthcare to transportation, and what the future holds for this rapidly advancing technology.',
-    ),
-    const PostModel(
-      title: 'Top 10 Travel Destinations in 2024',
-      description:
-          'From the breathtaking beaches of Bali to the historic streets of Rome, discover the top travel destinations to add to your bucket list this year.',
-    ),
-    const PostModel(
-      title: 'Mastering Dart Programming',
-      description:
-          'Dart is the language behind Flutter. Learn its key features, syntax, and why it’s a great choice for modern app development.',
-    ),
-    const PostModel(
-      title: 'How to Stay Productive While Working Remotely',
-      description:
-          'Remote work can be challenging. Discover tips and tools to maintain productivity and balance when working from home.',
-    ),
-  ];
+class PostsScreen extends StatefulWidget {
+  const PostsScreen({super.key});
 
-  PostsScreen({super.key});
+  @override
+  State<PostsScreen> createState() => _PostsScreenState();
+}
+
+class _PostsScreenState extends State<PostsScreen> {
+  final List<bool> _visibleItems = [];
+
+  void _animateItems() async {
+    for (int i = 0; i < _visibleItems.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (mounted) {
+        setState(() {
+          _visibleItems[i] = true;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,10 +40,50 @@ class PostsScreen extends StatelessWidget {
         backgroundColor: Colors.black,
         elevation: 0,
       ),
-      body: ListView.builder(
-        itemCount: posts.length,
-        itemBuilder: (context, index) {
-          return PostListItem(post: posts[index]);
+      body: BlocBuilder<PostsBloc, PostsState>(
+        builder: (context, state) {
+          if (state is PostsLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (state is PostsLoadedSuccess) {
+            final posts = state.postsList;
+            final postKeys = posts.keys.toList();
+
+            if (_visibleItems.length != posts.length) {
+              _visibleItems.clear();
+              _visibleItems.addAll(List.generate(posts.length, (_) => false));
+              _animateItems();
+            }
+            return ListView.builder(
+              itemCount: posts.length,
+              itemBuilder: (context, index) {
+                final key = postKeys[index];
+                final post = posts[key];
+
+                return AnimatedOpacity(
+                  duration: const Duration(milliseconds: 500),
+                  opacity: _visibleItems[index] ? 1.0 : 0.0,
+                  curve: Curves.easeIn,
+                  child: PostListItem(post: post!),
+                );
+              },
+            );
+          } else if (state is PostsLoadedError) {
+            return Center(
+              child: Text(
+                state.errorMessage,
+                style: const TextStyle(color: Colors.red, fontSize: 16),
+              ),
+            );
+          } else {
+            return const Center(
+              child: Text(
+                'No posts found!',
+                style: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
+            );
+          }
         },
       ),
       floatingActionButton: FloatingActionButton(
