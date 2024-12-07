@@ -6,6 +6,7 @@ import 'package:flutter_cc1/repositories/posts.repository.dart';
 import 'package:meta/meta.dart';
 
 part 'post_details_event.dart';
+
 part 'post_details_state.dart';
 
 class PostDetailsBloc extends Bloc<PostDetailsEvent, PostDetailsState> {
@@ -19,7 +20,12 @@ class PostDetailsBloc extends Bloc<PostDetailsEvent, PostDetailsState> {
   }
 
   Future<void> _loadPostDetails(int postId) async {
-    PostModel? post = await postsRepository.getPost(postId);
-    emit(PostDetailsLoadedSuccess(postId: postId, post: post));
+    try {
+      PostModel? post = await postsRepository.getPost(postId);
+      emit(PostDetailsLoadedSuccess(postId: postId, post: post));
+    } catch (error) {
+      emit(PostDetailsLoadedError(
+          exception: PostNotFoundException(), errorMessage: 'Post $postId is no longer available'));
+    }
   }
 }
