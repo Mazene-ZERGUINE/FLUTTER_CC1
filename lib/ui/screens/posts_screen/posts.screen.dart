@@ -55,17 +55,18 @@ class _PostsScreenState extends State<PostsScreen> {
               _visibleItems.addAll(List.generate(posts.length, (_) => false));
               _animateItems();
             }
+
             return ListView.builder(
               itemCount: posts.length,
               itemBuilder: (context, index) {
-                final key = postKeys[index];
-                final post = posts[key];
+                final postId = postKeys[index];
+                final post = posts[postId];
 
                 return AnimatedOpacity(
                   duration: const Duration(milliseconds: 500),
                   opacity: _visibleItems[index] ? 1.0 : 0.0,
                   curve: Curves.easeIn,
-                  child: PostListItem(post: post!),
+                  child: PostListItem(postId: postId, post: post!),
                 );
               },
             );
