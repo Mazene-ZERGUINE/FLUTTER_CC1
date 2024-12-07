@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_cc1/models/post.model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cc1/ui/screens/post_details_screen.dart';
+
+import '../../../repositories/posts.repository.dart';
+import '../../blocs/posts_details_bloc/post_details_bloc.dart';
 
 class PostListItem extends StatelessWidget {
   final int postId;
-  final PostModel post;
+  final String postTitle;
+  final String postDescription;
 
-  const PostListItem({super.key, required this.postId, required this.post});
+  const PostListItem({
+    super.key,
+    required this.postId,
+    required this.postTitle,
+    required this.postDescription,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +24,12 @@ class PostListItem extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PostDetailsScreen(postId: postId, post: post),
+            builder: (context) => BlocProvider(
+              create: (context) => PostDetailsBloc(
+                postsRepository: RepositoryProvider.of<PostsRepository>(context),
+              )..add(LoadPostDetails(postId: postId)),
+              child: PostDetailsScreen(postId: postId),
+            ),
           ),
         );
       },
@@ -50,7 +64,7 @@ class PostListItem extends StatelessWidget {
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      post.title,
+                      postTitle,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
@@ -66,7 +80,7 @@ class PostListItem extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                post.description,
+                postDescription,
                 style: const TextStyle(
                     fontSize: 16, color: Colors.grey, height: 1.5),
               ),

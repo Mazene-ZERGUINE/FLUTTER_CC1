@@ -38,4 +38,22 @@ class FakeLocalPostsDataSource extends LocalPostsDataSource {
     return inMemoryPosts;
   }
 
+  @override
+  Future<PostModel?> getOne(int postId) async {
+    return inMemoryPosts[postId];
+  }
+
+  @override
+  Future<void> delete(int postId) {
+    // TODO: implement delete
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> update(PostModel post) {
+    // TODO: implement update
+    throw UnimplementedError();
+  }
+
+
 }

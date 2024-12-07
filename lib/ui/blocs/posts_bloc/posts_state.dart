@@ -13,6 +13,8 @@ class PostsLoadedSuccess extends PostsState {
   PostsLoadedSuccess({required this.postsList});
 }
 
+class PostsListEmpty extends PostsState {}
+
 class PostsLoadedError extends PostsState {
   final AppException exception;
   final String errorMessage;

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cc1/ui/blocs/posts_bloc/posts_bloc.dart';
+import 'package:flutter_cc1/ui/screens/post_details_screen.dart';
 import 'package:flutter_cc1/ui/screens/posts_screen/post_list_item.dart';
+
+import '../../../repositories/posts.repository.dart';
+import '../../blocs/posts_details_bloc/post_details_bloc.dart';
 
 class PostsScreen extends StatefulWidget {
   const PostsScreen({super.key});
@@ -22,6 +26,20 @@ class _PostsScreenState extends State<PostsScreen> {
         });
       }
     }
+  }
+
+  void _redirectToPostDetailsScreen(int? postId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider(
+          create: (context) => PostDetailsBloc(
+            postsRepository: RepositoryProvider.of<PostsRepository>(context),
+          ),
+          child: PostDetailsScreen(postId: postId),
+        ),
+      ),
+    );
   }
 
   @override
@@ -60,13 +78,17 @@ class _PostsScreenState extends State<PostsScreen> {
               itemCount: posts.length,
               itemBuilder: (context, index) {
                 final postId = postKeys[index];
-                final post = posts[postId];
+                final post = posts[postId]!;
 
                 return AnimatedOpacity(
                   duration: const Duration(milliseconds: 500),
                   opacity: _visibleItems[index] ? 1.0 : 0.0,
                   curve: Curves.easeIn,
-                  child: PostListItem(postId: postId, post: post!),
+                  child: PostListItem(
+                    postId: postId,
+                    postTitle: post.title,
+                    postDescription: post.description,
+                  ),
                 );
               },
             );
@@ -77,7 +99,7 @@ class _PostsScreenState extends State<PostsScreen> {
                 style: const TextStyle(color: Colors.red, fontSize: 16),
               ),
             );
-          } else {
+          } else if (state is PostsListEmpty) {
             return const Center(
               child: Text(
                 'No posts found!',
@@ -85,10 +107,18 @@ class _PostsScreenState extends State<PostsScreen> {
               ),
             );
           }
+          return const Center(
+            child: Text(
+              'something went wrong ??!',
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          _redirectToPostDetailsScreen(null);
+        },
         backgroundColor: Colors.blueGrey,
         child: const Icon(Icons.add, size: 28, color: Colors.white),
       ),

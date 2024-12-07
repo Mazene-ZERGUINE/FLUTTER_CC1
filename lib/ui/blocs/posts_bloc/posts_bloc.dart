@@ -21,7 +21,12 @@ class PostsBloc extends Bloc<PostsEvent, PostsState> {
     try {
       final Map<int, PostModel> postsList = await postsRepository.getAllPosts();
       await Future.delayed(const Duration(seconds: 1));
-      emit(PostsLoadedSuccess(postsList: postsList));
+
+      if (postsList.isEmpty) {
+        emit(PostsListEmpty());
+      } else {
+        emit(PostsLoadedSuccess(postsList: postsList));
+      }
     } catch (e) {
       emit(PostsLoadedError(
         exception: AppException('Error while loading list'),
