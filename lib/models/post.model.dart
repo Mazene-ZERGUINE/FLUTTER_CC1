@@ -8,4 +8,10 @@ final class PostModel {
     return PostModel(
         title: jsonData['title'], description: jsonData['description']);
   }
+
+  PostModel copyWith({String? title, String? description}) {
+    return PostModel(
+        title: title ?? this.title,
+        description: description ?? this.description);
+  }
 }

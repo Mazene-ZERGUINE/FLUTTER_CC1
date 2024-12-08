@@ -9,24 +9,52 @@ class PostsRepository {
   const PostsRepository({required this.localPostsDataSource});
 
   Future<Map<int, PostModel>> getAllPosts() async {
-    try {
-      Map<int, PostModel> productsList = await localPostsDataSource.getAll();
-      return productsList;
-    } catch (error) {
-      throw AppException('Error occured while getting posts data from datasource');
-    }
+    return await localPostsDataSource.getAll();
   }
 
   Future<PostModel> getPost(int postId) async {
     try {
       final post = await localPostsDataSource.getOne(postId);
       if (post == null) {
-        throw PostNotFoundException('Post $postId not found');
+        throw PostNotFoundException('post $postId not found');
       }
       return post;
     } catch (error) {
-      if (error is AppException) rethrow;
       throw AppException('Error occured while post $postId from datasource');
+    }
+  }
+
+  Future<void> createPost(PostModel post) async {
+    try {
+      await localPostsDataSource.create(post);
+    } catch (error) {
+      throw AppException('Error occured while creating new post');
+    }
+  }
+
+  Future<void> deletePost(int postId) async {
+    try {
+      final post = await localPostsDataSource.getOne(postId);
+      if (post == null) {
+        throw PostNotFoundException('post $postId not found');
+      }
+      await localPostsDataSource.delete(postId);
+    } catch (error) {
+      throw AppException('Error occured while creating new post');
+    }
+  }
+
+  Future<void> updatePost(int postId,
+      {String? title, String? description}) async {
+    try {
+      final post = await localPostsDataSource.getOne(postId);
+      if (post == null) {
+        throw PostNotFoundException('post $postId not found');
+      }
+      await localPostsDataSource.update(postId,
+          title: title, description: description);
+    } catch (error) {
+      throw AppException('Error occured while creating new post');
     }
   }
 }
