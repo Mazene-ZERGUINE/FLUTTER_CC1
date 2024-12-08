@@ -19,6 +19,8 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
 
+  bool _hasHandledState = false;
+
   @override
   void initState() {
     super.initState();
@@ -44,7 +46,7 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
     final description = _descriptionController.text.trim();
 
     if (title.isEmpty || description.isEmpty) {
-      showSnackBar(context, 'Title or description can not be empty');
+      showSnackBar(context, 'Title or description can not be empty', backgroundColor: Colors.red);
       return;
     }
     if (widget.postId == null) {
@@ -63,6 +65,17 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
           );
     }
   }
+
+
+  void _handelPostCreatedWithSuccess(PostDetailsState state) {
+    String message = state is PostCreatedSuccess
+        ? 'Post created successfully!'
+        : 'Post updated successfully!';
+    showSnackBar(context, message);
+    Navigator.pushNamed(context, '/');
+    context.read<PostsBloc>().add(LoadPosts());
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +137,6 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
     );
   }
 
-  @override
   Widget _buildForm() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -219,17 +231,13 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
           const SizedBox(height: 24),
           BlocConsumer<PostDetailsBloc, PostDetailsState>(
             listener: (context, state) {
+              if (_hasHandledState) return; // Skip if already handled
               if (state is PostCreatedSuccess || state is PostUpdatedSuccess) {
-                String message = state is PostCreatedSuccess
-                    ? 'Post created successfully!'
-                    : 'Post updated successfully!';
-                showSnackBar(context, message);
-                Navigator.pushNamed(context, '/');
-                context.read<PostsBloc>().add(LoadPosts());
-              } else if (state is PostCreatedError ||
-                  state is PostUpdatedError) {
-                showSnackBar(context, 'Error occured ',
-                    backgroundColor: Colors.red);
+                _hasHandledState = true; // Mark as handled
+                _handelPostCreatedWithSuccess(state);
+              } else if (state is PostCreatedError || state is PostUpdatedError) {
+                _hasHandledState = true; // Mark as handled
+                showSnackBar(context, 'Error occurred', backgroundColor: Colors.red);
               }
             },
             builder: (context, state) {

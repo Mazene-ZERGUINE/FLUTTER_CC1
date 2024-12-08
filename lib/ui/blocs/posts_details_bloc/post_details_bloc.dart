@@ -28,6 +28,9 @@ class PostDetailsBloc extends Bloc<PostDetailsEvent, PostDetailsState> {
     on<DeletePost>((event, emit) {
       _deletePost(event.postId);
     });
+    on<ResetState>((event, emit) {
+      emit(PostDetailsInitial());
+    });
   }
 
   Future<void> _loadPostDetails(int postId) async {
@@ -44,7 +47,9 @@ class PostDetailsBloc extends Bloc<PostDetailsEvent, PostDetailsState> {
   Future<void> _createPost(PostModel post) async {
     try {
       await postsRepository.createPost(post);
-      emit(PostCreatedSuccess());
+      if (state is! PostCreatedSuccess) {
+        emit(PostCreatedSuccess());
+      }
     } catch (error) {
       emit(PostCreatedError(
           exception: AppException(),
@@ -52,12 +57,14 @@ class PostDetailsBloc extends Bloc<PostDetailsEvent, PostDetailsState> {
     }
   }
 
-  Future<void> _updatePost(
-      int postId, String? title, String? description) async {
+  Future<void> _updatePost(int postId, String? title,
+      String? description) async {
     try {
       await postsRepository.updatePost(postId,
           title: title, description: description);
-      emit(PostUpdatedSuccess());
+      if (state is! PostUpdatedSuccess) {
+        emit(PostUpdatedSuccess());
+      }
     } catch (error) {
       emit(PostUpdatedError(
           exception: AppException(),

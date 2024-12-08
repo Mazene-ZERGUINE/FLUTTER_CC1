@@ -28,3 +28,6 @@ final class DeletePost extends PostDetailsEvent {
 
   DeletePost({required this.postId});
 }
+
+
+final class ResetState extends PostDetailsEvent {}
