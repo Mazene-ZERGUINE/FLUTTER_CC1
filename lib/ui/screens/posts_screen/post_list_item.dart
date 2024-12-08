@@ -1,38 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_cc1/ui/screens/post_details_screen.dart';
-
-import '../../../repositories/posts.repository.dart';
-import '../../blocs/posts_details_bloc/post_details_bloc.dart';
 
 class PostListItem extends StatelessWidget {
   final int postId;
   final String postTitle;
   final String postDescription;
+  final VoidCallback onTap;
 
   const PostListItem({
     super.key,
     required this.postId,
     required this.postTitle,
     required this.postDescription,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => BlocProvider(
-              create: (context) => PostDetailsBloc(
-                postsRepository: RepositoryProvider.of<PostsRepository>(context),
-              )..add(LoadPostDetails(postId: postId)),
-              child: PostDetailsScreen(postId: postId),
-            ),
-          ),
-        );
-      },
+      onTap: onTap,
       child: Card(
         color: const Color(0xFF1C1C1E),
         margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),

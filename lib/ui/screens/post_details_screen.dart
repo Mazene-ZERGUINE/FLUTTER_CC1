@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_cc1/core/utils/snackbar_utils.dart';
+import 'package:flutter_cc1/ui/blocs/posts_bloc/posts_bloc.dart';
 
+import '../../models/post.model.dart';
 import '../blocs/posts_details_bloc/post_details_bloc.dart';
 
 class PostDetailsScreen extends StatefulWidget {
   final int? postId;
+
   const PostDetailsScreen({super.key, this.postId});
 
   @override
@@ -35,6 +39,31 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
     super.dispose();
   }
 
+  void _createOrUpdatePost() {
+    final title = _titleController.text.trim();
+    final description = _descriptionController.text.trim();
+
+    if (title.isEmpty || description.isEmpty) {
+      showSnackBar(context, 'Title or description can not be empty');
+      return;
+    }
+    if (widget.postId == null) {
+      context.read<PostDetailsBloc>().add(
+            CreateNewPost(
+              newPost: PostModel(title: title, description: description),
+            ),
+          );
+    } else {
+      context.read<PostDetailsBloc>().add(
+            UpdatePost(
+              postId: widget.postId!,
+              title: title,
+              description: description,
+            ),
+          );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,33 +83,48 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
       body: widget.postId == null
           ? _buildForm()
           : BlocBuilder<PostDetailsBloc, PostDetailsState>(
-        builder: (context, state) {
-          if (state is PostDetailsInitial) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is PostDetailsLoadedSuccess) {
-            final post = state.post;
-            _titleController = TextEditingController(text: post.title);
-            _descriptionController = TextEditingController(text: post.description);
-            return _buildForm();
-          } else if (state is PostDetailsLoadedError) {
-            return Center(
-              child: Text(
-                state.errorMessage,
-                style: const TextStyle(color: Colors.red, fontSize: 16),
-              ),
-            );
-          }
-          return const Center(
-            child: Text(
-              'Something went wrong!',
-              style: TextStyle(color: Colors.grey, fontSize: 16),
+              builder: (context, state) {
+                if (state is PostDetailsInitial) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is PostDetailsLoadedSuccess) {
+                  final post = state.post;
+                  _titleController = TextEditingController(text: post.title);
+                  _descriptionController =
+                      TextEditingController(text: post.description);
+                  return _buildForm();
+                } else if (state is PostDetailsLoadedError) {
+                  return Center(
+                    child: Text(
+                      state.errorMessage,
+                      style: const TextStyle(color: Colors.red, fontSize: 16),
+                    ),
+                  );
+                }
+                return const Center(
+                  child: Text(
+                    'Something went wrong!',
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                  ),
+                );
+              },
             ),
-          );
-        },
+    );
+  }
+
+  Widget _buildWrapper({required Widget child}) {
+    return Card(
+      color: const Color(0xFF1C1C1E),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: child,
       ),
     );
   }
 
+  @override
   Widget _buildForm() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -173,37 +217,44 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueGrey,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+          BlocConsumer<PostDetailsBloc, PostDetailsState>(
+            listener: (context, state) {
+              if (state is PostCreatedSuccess || state is PostUpdatedSuccess) {
+                String message = state is PostCreatedSuccess
+                    ? 'Post created successfully!'
+                    : 'Post updated successfully!';
+                showSnackBar(context, message);
+                Navigator.pushNamed(context, '/');
+                context.read<PostsBloc>().add(LoadPosts());
+              } else if (state is PostCreatedError ||
+                  state is PostUpdatedError) {
+                showSnackBar(context, 'Error occured ',
+                    backgroundColor: Colors.red);
+              }
+            },
+            builder: (context, state) {
+              return SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    _createOrUpdatePost();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueGrey,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: Text(
+                    widget.postId == null ? 'Add New Post' : 'Save Changes',
+                    style: const TextStyle(fontSize: 18, color: Colors.white),
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: Text(
-                widget.postId == null ? 'Add New Post' : 'Save Changes',
-                style: const TextStyle(fontSize: 18, color: Colors.white),
-              ),
-            ),
+              );
+            },
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildWrapper({required Widget child}) {
-    return Card(
-      color: const Color(0xFF1C1C1E),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 4,
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: child,
       ),
     );
   }

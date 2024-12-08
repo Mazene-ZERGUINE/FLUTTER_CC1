@@ -5,6 +5,7 @@ import 'package:flutter_cc1/repositories/posts.repository.dart';
 import 'package:flutter_cc1/ui/blocs/posts_bloc/posts_bloc.dart';
 import 'package:flutter_cc1/ui/blocs/posts_details_bloc/post_details_bloc.dart';
 import 'package:flutter_cc1/ui/screens/posts_screen/posts.screen.dart';
+import 'package:flutter_cc1/ui/screens/post_details_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,7 +34,7 @@ class MyApp extends StatelessWidget {
           BlocProvider<PostDetailsBloc>(
             create: (context) => PostDetailsBloc(
               postsRepository: RepositoryProvider.of<PostsRepository>(context),
-            )
+            ),
           ),
         ],
         child: MaterialApp(
@@ -42,7 +43,14 @@ class MyApp extends StatelessWidget {
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
           ),
-          home: const PostsScreen(),
+          initialRoute: '/',
+          routes: {
+            '/': (context) => const PostsScreen(),
+            '/post-details': (context) {
+              final postId = ModalRoute.of(context)!.settings.arguments as int?;
+              return PostDetailsScreen(postId: postId);
+            },
+          },
         ),
       ),
     );

@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cc1/ui/blocs/posts_bloc/posts_bloc.dart';
-import 'package:flutter_cc1/ui/screens/post_details_screen.dart';
 import 'package:flutter_cc1/ui/screens/posts_screen/post_list_item.dart';
-
-import '../../../repositories/posts.repository.dart';
-import '../../blocs/posts_details_bloc/post_details_bloc.dart';
 
 class PostsScreen extends StatefulWidget {
   const PostsScreen({super.key});
@@ -28,18 +24,22 @@ class _PostsScreenState extends State<PostsScreen> {
     }
   }
 
-  void _redirectToPostDetailsScreen(int? postId) {
-    Navigator.push(
+  @override
+  void initState() {
+    super.initState();
+    context.read<PostsBloc>().add(LoadPosts());
+  }
+
+  void _redirectToPostDetailsScreen(int? postId) async {
+    final result = await Navigator.pushNamed(
       context,
-      MaterialPageRoute(
-        builder: (context) => BlocProvider(
-          create: (context) => PostDetailsBloc(
-            postsRepository: RepositoryProvider.of<PostsRepository>(context),
-          ),
-          child: PostDetailsScreen(postId: postId),
-        ),
-      ),
+      '/post-details',
+      arguments: postId,
     );
+
+    if (result == 'reload') {
+      context.read<PostsBloc>().add(LoadPosts());
+    }
   }
 
   @override
@@ -88,6 +88,7 @@ class _PostsScreenState extends State<PostsScreen> {
                     postId: postId,
                     postTitle: post.title,
                     postDescription: post.description,
+                    onTap: () => _redirectToPostDetailsScreen(postId),
                   ),
                 );
               },
