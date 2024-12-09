@@ -1,16 +1,55 @@
-# flutter_cc1
+# Flutter Posts Application
 
-A new Flutter project.
+This project is a simple Flutter application designed to manage a list of posts using BLOC architecture and Repository pattern. The app interacts with a mock data source that simulates CRUD operations on a list of posts
+
+## Features
+
+1. **Posts List Page**:
+    - Displays a list of posts with titles and descriptions.
+    - Allows users to swipe left to delete posts.
+
+2. **Post Details Page**:
+    - View and edit an existing post.
+
+3. **New Post Creation**:
+    - A floating action button navigates to a form for creating a new post.
+
+4. **State Management using Bloc**:
+    - Handles all potential states, including:
+        - Loading
+        - Success
+        - Empty list
+        - Error
+
+
+## Mock Data Source
+
+The application uses a `FakePostsDataSource` class to simulate CRUD operations with:
+- Fake data for posts.
+- Delays to mimic real-world API calls.
+- Full support for success, empty, and error scenarios.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+To run the application locally:
 
-A few resources to get you started if this is your first Flutter project:
+1. Clone the repository:
+   ```bash
+   git clone <repository_url>
+   ````
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+2. Navigate to the project directory:
+   ```bash
+   cd <project_directory>
+   ````
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+3. Install dependencies:
+   ```bash
+   flutter pub get
+   ````
+
+4. Run the application
+   ```bash
+   flutter pub run
+   ````
+
