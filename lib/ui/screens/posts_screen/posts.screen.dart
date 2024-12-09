@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_cc1/core/utils/snackbar_utils.dart';
 import 'package:flutter_cc1/ui/blocs/posts_bloc/posts_bloc.dart';
 import 'package:flutter_cc1/ui/screens/posts_screen/post_list_item.dart';
+
+import '../../blocs/posts_details_bloc/post_details_bloc.dart';
 
 class PostsScreen extends StatefulWidget {
   const PostsScreen({super.key});
@@ -89,15 +92,34 @@ class _PostsScreenState extends State<PostsScreen> {
                     duration: const Duration(milliseconds: 500),
                     opacity: _visibleItems[index] ? 1.0 : 0.0,
                     curve: Curves.easeIn,
-                    child: PostListItem(
-                      postId: postId,
-                      postTitle: post.title,
-                      postDescription: post.description,
-                      onTap: () => _redirectToPostDetailsScreen(postId),
+                    child: Dismissible(
+                      key: ValueKey(postId),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        color: Colors.red,
+                        child: const Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                      ),
+                      onDismissed: (direction) {
+                        context.read<PostDetailsBloc>().add(DeletePost(postId: postId));
+                        showSnackBar(context, 'Post $postId deleted', backgroundColor: Colors.red);
+                        context.read<PostsBloc>().add(LoadPosts());
+                      },
+                      child: PostListItem(
+                        postId: postId,
+                        postTitle: post.title,
+                        postDescription: post.description,
+                        onTap: () => _redirectToPostDetailsScreen(postId),
+                      ),
                     ),
                   );
                 },
               );
+
             } else if (state is PostsLoadedError) {
               return Center(
                 child: Text(
